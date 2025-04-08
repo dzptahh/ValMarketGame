@@ -1,5 +1,5 @@
 class Player:
-    def __init__(self, balance=2000):  # Set default balance if not provided
+    def __init__(self, balance=2000):
         self.balance = balance  # Starting money
         self.inventory = []
         self.total_spent = 0
@@ -12,7 +12,7 @@ class Player:
             self.total_spent += skin.discounted_price
             self.total_purchases += 1
             return True
-        return False
+        return False 
 
     def add_money(self, amount):
         self.balance += amount

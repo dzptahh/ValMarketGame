@@ -72,9 +72,36 @@ class NightMarketApp:
         self.player.add_money(500)
         self.update_balance()
 
+    # gui.py
     def show_inventory(self):
-        inventory_names = [skin.name for skin in self.player.inventory]
-        messagebox.showinfo("Inventory", "\n".join(inventory_names) if inventory_names else "Inventory is empty!")
+        inventory_window = Toplevel(self.master)  # Create a new window for inventory
+        inventory_window.title("Your Inventory")
+        
+        # If inventory is empty
+        if not self.player.inventory:
+            no_inventory_label = Label(inventory_window, text="Your inventory is empty!", font=("Arial", 14))
+            no_inventory_label.pack(pady=10)
+            return
+
+        # Create a frame for displaying skins
+        inventory_frame = Frame(inventory_window)
+        inventory_frame.pack(padx=20, pady=20)
+
+        # Display each skin with name and price
+        for idx, skin in enumerate(self.player.inventory):
+            frame = Frame(inventory_frame, bd=2, relief=GROOVE)
+            frame.grid(row=idx//3, column=idx%3, padx=10, pady=10)
+
+            # Display skin name and price
+            name_label = Label(frame, text=skin.name, font=("Arial", 12))
+            name_label.pack()
+
+            price_label = Label(frame, text=f"{skin.discounted_price} VP", font=("Arial", 12))
+            price_label.pack()
+
+        # Add close button
+        close_button = Button(inventory_window, text="Close", command=inventory_window.destroy)
+        close_button.pack(pady=10)
 
     def update_timer(self):
         if self.time_left > 0 and self.timer_running:
