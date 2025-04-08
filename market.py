@@ -6,13 +6,17 @@ class Market:
         self.available_skins = []
         self.skin_names = self.load_skin_names(skin_file)  # Load skin names from the file
         self.rarity_pool = ["Common", "Rare", "Epic", "Legendary"]
-        self.skin_data = self.load_skin_data("valorant-skins.csv") # Load skin data from CSV
+        self.skin_data = self.load_skin_data(skin_file) # Load skin data from CSV
 
     def load_skin_names(self, file_path):
-        """Loads skin names from a text file (one name per line)."""
+        """Loads skin names from a CSV file."""
         try:
             with open(file_path, 'r', encoding='utf-8') as file:
-                names = [line.strip() for line in file if line.strip()]
+                reader = csv.DictReader(file)
+                if 'Name' not in reader.fieldnames:  # Check for 'Name' column
+                    print(f"Error: The CSV file '{file_path}' is missing the 'Name' column.")
+                    return []
+                names = [row['Name'] for row in reader]  # Extract names from 'Name' column
             return names
         except FileNotFoundError:
             print(f"Error: File not found at {file_path}. Please create this file with skin names.")
@@ -38,10 +42,8 @@ class Market:
         for _ in range(count):
             name = random.choice(self.skin_names)
             rarity = random.choice(self.rarity_pool)
-            # changed to random choice and get name and price
-            skin_data = random.choice(self.skin_data)
-            price = int(skin_data['Price'])
-            skin = Skin(name, price, rarity)  # Base price will be set by the Skin class
+            skin = Skin(name, 0, rarity)  # Base price will be set by the Skin class
+            skin.base_price = skin.set_base_price()
             skin.discounted_price = skin.calculate_discount_price()
             self.available_skins.append(skin)
 
@@ -54,11 +56,10 @@ class Market:
         if 0 <= index < len(self.available_skins):
             name = random.choice(self.skin_names)
             rarity = random.choice(self.rarity_pool)
-            # changed to random choice and get name and price
-            skin_data = random.choice(self.skin_data)
-            price = int(skin_data['Price'])
-            new_skin = Skin(name, price, rarity)  # Base price will be set by the Skin class
+            new_skin = Skin(name, 0, rarity)  # Base price will be set by the Skin class
+            new_skin.base_price = new_skin.set_base_price()
             new_skin.discounted_price = new_skin.calculate_discount_price()
             self.available_skins[index] = new_skin
         else:
             print(f"Error: Invalid index {index} for refreshing skin.")
+
