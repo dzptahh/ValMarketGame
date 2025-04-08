@@ -1,5 +1,5 @@
 class Player:
-    def __init__(self, balance=2000):
+    def __init__(self, balance=10000):
         self.balance = balance  # Starting money
         self.inventory = []
         self.total_spent = 0
