@@ -9,7 +9,7 @@ class GameManager:
         self.time_left = 60  # seconds for a round
 
     def start_game(self):
-        print("Welcome to Valorant Night Market!")
+        print("🎉 Welcome to Valorant Night Market!")
         self.market.generate_offers()
         start_time = time.time()
 

@@ -71,9 +71,10 @@ class NightMarketApp:
             discount_info_label = Label(frame, text=f"Discount: {discount_percentage}%", font=("Arial", 10))
             discount_info_label.pack()
 
-            # Button to buy skin
-            buy_button = Button(frame, text="Buy", command=lambda s=skin: self.buy_skin(s))
+            # Button to buy skin, passing the index to identify which box to update
+            buy_button = Button(frame, text="Buy", command=lambda s=skin, idx=idx: self.buy_skin(s, idx))
             buy_button.pack()
+
 
     def custom_popup(self, title, message):
         popup = Toplevel(self.master)
@@ -90,13 +91,42 @@ class NightMarketApp:
         popup.grab_set()  # Disable interaction with the main window until the popup is closed
         self.master.wait_window(popup)  # Wait until the popup is closed before continuing
         
-    def buy_skin(self, skin):
+    def buy_skin(self, skin, box_index):
         if success := self.player.purchase_skin(skin):
             self.stats.record_purchase(skin)
             self.update_balance()
-            self.custom_popup("Purchase Successful", f"You bought {skin.name} for {skin.discounted_price} VP!")
+            self.custom_popup("Purchase Successful ✅", f"You bought {skin.name} for {skin.discounted_price} VP! 🔥")
+
+            # After purchase, regenerate only the selected box with a new random skin
+            self.market.refresh_skin(box_index)
+            new_skin = self.market.available_skins[box_index]  # Get the new skin for the selected box
+            self.update_skin_display(new_skin, box_index)
         else:
-            self.custom_popup("Purchase Failed", "Not enough balance!")
+            self.custom_popup("Purchase Failed ❌", "Not enough balance! 💸")
+
+
+            
+    def update_skin_display(self, skin, box_index):
+        # Get the frame at the specified box index
+        skin_frame = self.skin_frame.winfo_children()[box_index]
+        
+        # Update the skin's information in the selected box
+        name_label = skin_frame.winfo_children()[0]  # The skin name label
+        price_label = skin_frame.winfo_children()[1]  # The original price label
+        discount_label = skin_frame.winfo_children()[2]  # The discounted price label
+        discount_info_label = skin_frame.winfo_children()[3]  # The discount info label
+        buy_button = skin_frame.winfo_children()[4]  # The buy button
+        
+        # Update the information for this box with the new skin
+        name_label.config(text=skin.name)
+        price_label.config(text=f"Original Price: {skin.base_price} VP")
+        discount_label.config(text=f"Discounted Price: {skin.discounted_price} VP")
+
+        discount_percentage = int((1 - (skin.discounted_price / skin.base_price)) * 100)
+        discount_info_label.config(text=f"Discount: {discount_percentage}%")
+
+        # Enable the buy button again if it's disabled
+        buy_button.config(state=NORMAL)
 
     def update_balance(self):
         self.balance_label.config(text=f"Balance: {self.player.balance} VP")
@@ -147,7 +177,36 @@ class NightMarketApp:
             self.timer_label.config(text=f"Time Left: {self.time_left}s")
             self.master.after(1000, self.update_timer)
         else:
+            # Stop the timer
             self.timer_running = False
+            
+            # Save the player's data at the end of the game
             self.stats.save_data(self.player)
-            messagebox.showinfo("Time's Up!", f"Game Over! You spent {self.player.total_spent} VP.")
-            self.master.quit()
+
+            # Calculate the total score based on VP spent, skins bought, and other stats
+            total_spent = self.player.total_spent
+            total_purchases = self.player.total_purchases
+            total_score = self.player.calculate_score()
+
+            # Calculate the total additional money added (if tracked)
+            total_added_money = sum(item["Amount Added"] for item in self.stats.additional_money_record)
+
+            # Create a summary message that will be shown in a label
+            summary_text = (
+                f"Game Over! ⏳\n\n"
+                f"Total VP Spent: {total_spent} VP\n"
+                f"Skins Purchased: {total_purchases}\n"
+                f"Your Score: {total_score}\n"
+                f"Total Money Added: {total_added_money} VP"
+            )
+
+            # Create a label to show the summary at the bottom
+            self.game_over_label = Label(self.master, text=summary_text, font=("Arial", 12), fg="red")
+            self.game_over_label.pack(pady=20)
+
+            # Optionally, you could also disable the "Buy" buttons if the game is over
+            for widget in self.skin_frame.winfo_children():
+                widget.config(state=DISABLED)  # Disable all widgets in the skin frame
+
+            # You can also hide or disable the timer, if necessary
+            self.timer_label.config(text="Game Over!")

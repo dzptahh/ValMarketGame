@@ -2,10 +2,11 @@ import csv
 import os
 
 class StatsManager:
-    def __init__(self, filename="data/purchases.csv"):
+    def __init__(self, filename="data/leaderboard.csv"):
         self.filename = filename
         os.makedirs(os.path.dirname(self.filename), exist_ok=True)
         self.purchase_history = []
+        self.leaderboard = self.load_leaderboard()
 
     def record_purchase(self, skin):
         # Record skin purchase with relevant data
@@ -18,7 +19,14 @@ class StatsManager:
 
     def save_data(self, player):
         # Save purchase history and player stats to CSV
-        with open(self.filename, mode="w", newline="") as file:
+        with open(self.filename, mode="a", newline="") as file:  # Append mode to add new scores
+            writer = csv.DictWriter(file, fieldnames=["Player Name", "Score"])
+            if file.tell() == 0:  # Write header only if the file is empty
+                writer.writeheader()
+            writer.writerow({"Player Name": player.name, "Score": player.total_spent})
+
+        # Save purchase history to a different CSV
+        with open("data/purchases.csv", mode="w", newline="") as file:
             writer = csv.DictWriter(file, fieldnames=["Skin Name", "Rarity", "Base Price", "Discounted Price"])
             writer.writeheader()
             writer.writerows(self.purchase_history)
@@ -29,12 +37,19 @@ class StatsManager:
         print(f"🧮 Skins bought: {player.total_purchases}")
         print(f"🏆 Highest score: {player.calculate_score()}")
 
-    def load_data(self):
-        # Optionally load previously saved data from the CSV file
+    def load_leaderboard(self):
+        # Load leaderboard data
+        leaderboard = []
         if os.path.exists(self.filename):
             with open(self.filename, mode="r") as file:
                 reader = csv.DictReader(file)
-                for row in reader:
-                    print(row)
-        else:
-            print("No saved data found.")
+                leaderboard.extend(
+                    {"name": row["Player Name"], "score": int(row["Score"])}
+                    for row in reader
+                )
+        return leaderboard
+
+    def get_top_scores(self):
+        # Sort leaderboard by score and return top 10
+        self.leaderboard.sort(key=lambda x: x['score'], reverse=True)
+        return self.leaderboard[:10]  # Return top 10 scores
