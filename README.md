@@ -1,6 +1,7 @@
 # Valorant Night Market 
 
 This is a **Valorant Night Market Simulator** project, allowing players to simulate the experience of buying skins from the Valorant Night Market. The simulator is designed using **Python** with a graphical user interface (GUI) created using **Tkinter**.
+![My Image](main.png)
 
 ## Features
 
