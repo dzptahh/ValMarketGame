@@ -79,7 +79,7 @@ class NightMarketApp(tk.Tk):  # Inherit from Tk instead of object
         img_frame.grid(row=0, column=1, sticky="nsew")
 
         # set image
-        self.img = Image.open("Valorant-Gekko-Art.png")
+        self.img = Image.open("valorant-wallpaper-4k copy.png")
         self.img = self.img.resize((800, 750))
         self.img = ImageTk.PhotoImage(self.img)
 
@@ -310,19 +310,19 @@ class NightMarketApp(tk.Tk):  # Inherit from Tk instead of object
         self.stats.save_data(self.player)
 
         # Create the widgets for the game over screen directly in the main window
-        game_over_frame = Frame(self.master)
+        game_over_frame = Frame(self.master, bg="#FFFDF7")
         game_over_frame.pack(pady=20, padx=20)
         game_over_frame.columnconfigure(0, weight=1)
         game_over_frame.columnconfigure(1, weight=1)
 
         # Left side for Leaderboard
-        left_frame = Frame(game_over_frame)
+        left_frame = Frame(game_over_frame, bg="#FFFDF7")
         left_frame.grid(row=0, column=0, sticky="nsew", padx=10, pady=10)
 
-        game_over_label = Label(left_frame, text="Game Over", font=("Arial", 24, "bold"), fg="#F46197")
+        game_over_label = Label(left_frame, text="Game Over", font=("Arial", 24, "bold"), fg="#F46197", bg="#FFFDF7")
         game_over_label.pack(pady=10)
 
-        leaderboard_label = Label(left_frame, text="🏆 Leaderboard", font=("Arial", 18), fg="#2CA58D")
+        leaderboard_label = Label(left_frame, text="🏆 Leaderboard", font=("Arial", 18), fg="#2CA58D", bg="#FFFDF7")
         leaderboard_label.pack(pady=5)
 
         leaderboard = self.stats.get_top_scores()
@@ -336,14 +336,14 @@ class NightMarketApp(tk.Tk):  # Inherit from Tk instead of object
             for i, entry in enumerate(leaderboard):
                 summary_text += f"{i+1}. {entry['name']}: {entry['score']} Points\n"
 
-        leaderboard_text_label = Label(left_frame, text=summary_text, font=("Arial", 12), justify=LEFT, fg="#705D56")
+        leaderboard_text_label = Label(left_frame, text=summary_text, font=("Arial", 12), justify=LEFT, fg="#705D56", bg="#FFFDF7")
         leaderboard_text_label.pack()
 
         # Right side for Summary and Graph
-        right_frame = Frame(game_over_frame)
+        right_frame = Frame(game_over_frame, bg="#FFFDF7")
         right_frame.grid(row=0, column=1, sticky="nsew", padx=10, pady=10)
 
-        summary_label = Label(right_frame, text="📊 Game Summary", font=("Arial", 18), fg="#D76A03")
+        summary_label = Label(right_frame, text="📊 Game Summary", font=("Arial", 18), fg="#D76A03", bg="#FFFDF7")
         summary_label.pack(pady=5)
 
         summary_text = (
@@ -353,19 +353,20 @@ class NightMarketApp(tk.Tk):  # Inherit from Tk instead of object
             f"Final Score: {total_score} Points\n"
             f"Additional Money Added: {total_added_money} VP\n"
         )
-        summary_text_label = Label(right_frame, text=summary_text, font=("Arial", 12), justify=LEFT, fg="#705D56")
+        summary_text_label = Label(right_frame, text=summary_text, font=("Arial", 12), justify=LEFT, fg="#705D56", bg="#FFFDF7")
         summary_text_label.pack()
 
         # Graph for Player Scores
         if leaderboard:
             fig, ax = plt.subplots(figsize=(5, 4))  # Adjusted size to make it more compact
-
+            fig.patch.set_facecolor('#FFFDF7')  # Change to desired background color (e.g., #FFFDF7 or any hex code)
+            ax.set_facecolor('#E8E8E8')
             # Extract player names and scores
             player_names = [entry['name'] for entry in leaderboard]
             player_scores = [entry['score'] for entry in leaderboard]
 
             # Plot bar chart
-            ax.bar(player_names, player_scores, color='#4CAF50')
+            ax.bar(player_names, player_scores, color='#EF8354')
             ax.set_title("Player Scores")
             ax.set_xlabel("Player Name")
             ax.set_ylabel("Score")
