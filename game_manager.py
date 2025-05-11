@@ -41,14 +41,13 @@ class GameManager:
             print("⚠ Please enter a valid number.")
 
     def process_purchase(self, skin):
-        """Process the purchase and deduct balance if successful."""
         if self.player.balance >= skin.discounted_price:
-            self.player.balance -= skin.discounted_price  # Deduct balance on successful purchase
-            self.player.total_spent += skin.discounted_price
-            self.player.total_purchases += 1
-            self.player.inventory.append(skin)
+            self.player.balance -= skin.discounted_price  # Deduct balance
+            self.player.inventory.append(skin)  # Add skin to inventory
+            self.player.total_spent += skin.discounted_price  # Track total spent
             return True
         return False
+
         
 
     def end_game(self):

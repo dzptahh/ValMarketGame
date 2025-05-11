@@ -1,5 +1,5 @@
 import random
-from skin import Skin  # Assuming the Skin class is defined
+from skin import Skin
 import csv
 class Market:
     def __init__(self, skin_file="valorant-skins.csv"):
@@ -7,7 +7,7 @@ class Market:
         self.skin_names = self.load_skin_names(skin_file)
         self.rarity_pool = ["Common", "Rare", "Epic", "Legendary"]
         self.skin_data = self.load_skin_data(skin_file)
-        self.generate_offers()  # Generate offers in the constructor
+        self.generate_offers()
 
     def load_skin_names(self, file_path):
         try:
@@ -40,9 +40,9 @@ class Market:
         for _ in range(count):
             name = random.choice(self.skin_names)
             rarity = random.choice(self.rarity_pool)
-            # Find the skin data by name
-            skin_data = next((data for data in self.skin_data if data['Name'] == name), None)
-            if skin_data:
+            if skin_data := next(
+                (data for data in self.skin_data if data['Name'] == name), None
+            ):
                 price = int(skin_data['Price'])
                 skin = Skin(name, price, rarity)
                 skin.discounted_price = skin.calculate_discount_price()
@@ -57,7 +57,6 @@ class Market:
 
         if 0 <= index < len(self.available_skins):
             name = random.choice(self.skin_names)
-            # Find the skin data by name
             skin_data = next((data for data in self.skin_data if data['Name'] == name), None)
             rarity = random.choice(self.rarity_pool)
             if skin_data:
@@ -69,4 +68,3 @@ class Market:
                 print(f"Warning: Skin data not found for '{name}'. Skipping refresh.")
         else:
             print(f"Error: Invalid index {index} for refreshing skin.")
-
