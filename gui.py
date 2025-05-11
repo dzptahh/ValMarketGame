@@ -357,41 +357,49 @@ class NightMarketApp(tk.Tk):  # Inherit from Tk instead of object
         summary_text_label = Label(right_frame, text=summary_text, font=("Arial", 12), justify=LEFT, fg="#705D56", bg="#FFFDF7")
         summary_text_label.pack()
 
-        # Graph for Player Scores
-        if leaderboard:
-            fig, ax = plt.subplots(figsize=(5, 4))  # Adjusted size to make it more compact
-            fig.patch.set_facecolor('#FFFDF7')  # Change to desired background color (e.g., #FFFDF7 or any hex code)
-            ax.set_facecolor('#E8E8E8')
-            # Extract player names and scores
-            player_names = [entry['name'] for entry in leaderboard]
-            player_scores = [entry['score'] for entry in leaderboard]
-
-            # Plot bar chart
-            ax.bar(player_names, player_scores, color='#EF8354')
-            ax.set_title("Player Scores")
-            ax.set_xlabel("Player Name")
-            ax.set_ylabel("Score")
-
-            # Rotate x-axis labels to 45° for better visibility and compactness
-            ax.set_xticks(range(len(player_names)))
-            ax.set_xticklabels(player_names, rotation=45, ha='right', fontsize=9)
-
-            # Apply grid for better readability
-            ax.grid(axis='y', linestyle='--', alpha=0.7)
-
-            # Adjust layout to prevent label cutoff
-            plt.tight_layout()
-
-            # Embed the plot in the right frame
-            canvas = FigureCanvasTkAgg(fig, master=right_frame)
-            canvas.draw()
-            canvas.get_tk_widget().pack(pady=10)
-        else:
-            no_data_label = Label(right_frame, text="No data available to plot.", font=("Arial", 12))
-            no_data_label.pack(pady=10)
+        # Button to open graph in a new window
+        graph_button = Button(right_frame, text="View Graph", command=self.open_graph_window, highlightbackground="#FFFDF7", fg="#2CA58D")
+        graph_button.pack(pady=10)
 
         close_button = Button(self, text="Close", command=self.destroy, highlightbackground="#FFFDF7", fg="#F46197")
         close_button.pack(pady=10)
+
+    def open_graph_window(self):
+        # Create a new window for the graph
+        graph_window = Toplevel(self)
+        graph_window.title("Player Scores Graph")
+        graph_window.geometry("600x400")  # Adjust the size of the window if needed
+
+        # Plot the graph
+        fig, ax = plt.subplots(figsize=(5, 4))  # Adjusted size to make it more compact
+        fig.patch.set_facecolor('#FFFDF7')  # Change to desired background color (e.g., #FFFDF7 or any hex code)
+        ax.set_facecolor('#E8E8E8')
+
+        # Extract player names and scores
+        leaderboard = self.stats.get_top_scores()
+        player_names = [entry['name'] for entry in leaderboard]
+        player_scores = [entry['score'] for entry in leaderboard]
+
+        # Plot bar chart
+        ax.bar(player_names, player_scores, color='#EF8354')
+        ax.set_title("Player Scores")
+        ax.set_xlabel("Player Name")
+        ax.set_ylabel("Score")
+
+        # Rotate x-axis labels to 45° for better visibility and compactness
+        ax.set_xticks(range(len(player_names)))
+        ax.set_xticklabels(player_names, rotation=45, ha='right', fontsize=9)
+
+        # Apply grid for better readability
+        ax.grid(axis='y', linestyle='--', alpha=0.7)
+
+        # Adjust layout to prevent label cutoff
+        plt.tight_layout()
+
+        # Embed the plot in the new window
+        canvas = FigureCanvasTkAgg(fig, master=graph_window)
+        canvas.draw()
+        canvas.get_tk_widget().pack(pady=10)
 
 
 
