@@ -112,22 +112,19 @@ class NightMarketApp(tk.Tk):  # Inherit from Tk instead of object
             button.configure(state="disabled")
 
     def handler(self):
-        # check if the username and password fields are not empty
         if self.entry_username.get() != "" and self.entry_password.get() != "":
-            # if both fields are not empty, go to the information page
+            self.player.name = self.entry_username.get()  # Set the player's name
             self.create_widgets()
-
         else:
-            # if one or both fields are empty, display an error message
             error_frame = tk.Frame(self, bg='white')
             error_frame.grid(row=4, column=1, sticky="nsew")
 
             fail = tk.Label(error_frame, text='Registration failed. Please enter all information.', fg='red')
             fail.grid(row=0, column=0)
 
-            # after 2 seconds, destroy the error message
             self.after(2000, fail.destroy)
             self.after(2000, error_frame.destroy)
+
 
     def clear_frame(self):
         for widget in self.winfo_children():
@@ -164,7 +161,11 @@ class NightMarketApp(tk.Tk):  # Inherit from Tk instead of object
 
         # Ensure that the timer is started after the widgets are created
         self.timer_running = True
-
+    
+    def start_timer(self):
+        self.time_left = 30  # Reset the timer when game starts
+        self.timer_running = True
+        self.update_timer()
         
     def display_skins(self):
         for widget in self.skin_frame.winfo_children():
@@ -306,6 +307,7 @@ class NightMarketApp(tk.Tk):  # Inherit from Tk instead of object
 
     def show_game_over_screen(self, total_spent, total_purchases, total_score):
         self.clear_frame()
+        self.stats.save_data(self.player)
 
         # Create the widgets for the game over screen directly in the main window
         game_over_frame = Frame(self.master)
@@ -317,10 +319,10 @@ class NightMarketApp(tk.Tk):  # Inherit from Tk instead of object
         left_frame = Frame(game_over_frame)
         left_frame.grid(row=0, column=0, sticky="nsew", padx=10, pady=10)
 
-        game_over_label = Label(left_frame, text="Game Over", font=("Arial", 24, "bold"))
+        game_over_label = Label(left_frame, text="Game Over", font=("Arial", 24, "bold"), fg="#F46197")
         game_over_label.pack(pady=10)
 
-        leaderboard_label = Label(left_frame, text="🏆 Leaderboard", font=("Arial", 18))
+        leaderboard_label = Label(left_frame, text="🏆 Leaderboard", font=("Arial", 18), fg="#2CA58D")
         leaderboard_label.pack(pady=5)
 
         leaderboard = self.stats.get_top_scores()
@@ -334,14 +336,14 @@ class NightMarketApp(tk.Tk):  # Inherit from Tk instead of object
             for i, entry in enumerate(leaderboard):
                 summary_text += f"{i+1}. {entry['name']}: {entry['score']} Points\n"
 
-        leaderboard_text_label = Label(left_frame, text=summary_text, font=("Arial", 12), justify=LEFT)
+        leaderboard_text_label = Label(left_frame, text=summary_text, font=("Arial", 12), justify=LEFT, fg="#705D56")
         leaderboard_text_label.pack()
 
         # Right side for Summary and Graph
         right_frame = Frame(game_over_frame)
         right_frame.grid(row=0, column=1, sticky="nsew", padx=10, pady=10)
 
-        summary_label = Label(right_frame, text="📊 Game Summary", font=("Arial", 18))
+        summary_label = Label(right_frame, text="📊 Game Summary", font=("Arial", 18), fg="#D76A03")
         summary_label.pack(pady=5)
 
         summary_text = (
@@ -351,25 +353,43 @@ class NightMarketApp(tk.Tk):  # Inherit from Tk instead of object
             f"Final Score: {total_score} Points\n"
             f"Additional Money Added: {total_added_money} VP\n"
         )
-        summary_text_label = Label(right_frame, text=summary_text, font=("Arial", 12), justify=LEFT)
+        summary_text_label = Label(right_frame, text=summary_text, font=("Arial", 12), justify=LEFT, fg="#705D56")
         summary_text_label.pack()
 
-        # Graph for Total Spent
-        fig, ax = plt.subplots(figsize=(6, 4))
-        #ax.hist(self.stats.total_money_spent, bins=5)  # Example: Histogram of total spent
-        # Instead of a histogram, let's plot a bar chart of total spent for each player in the leaderboard
-        player_names = [entry['name'] for entry in leaderboard]
-        player_scores = [entry['score'] for entry in leaderboard] # use score instead of total_money_spent
-        ax.bar(player_names, player_scores)
-        ax.set_title("Player Scores")
-        ax.set_xlabel("Player Name")
-        ax.set_ylabel("Score")
-        canvas = FigureCanvasTkAgg(fig, master=right_frame)
-        canvas.draw()
-        canvas.get_tk_widget().pack(pady=10)
+        # Graph for Player Scores
+        if leaderboard:
+            fig, ax = plt.subplots(figsize=(5, 4))  # Adjusted size to make it more compact
 
-        close_button = tk.Button(self, text="Quit", fg="red", command=self.destroy, highlightbackground="#FFFDF7")
-        close_button.pack()
+            # Extract player names and scores
+            player_names = [entry['name'] for entry in leaderboard]
+            player_scores = [entry['score'] for entry in leaderboard]
+
+            # Plot bar chart
+            ax.bar(player_names, player_scores, color='#4CAF50')
+            ax.set_title("Player Scores")
+            ax.set_xlabel("Player Name")
+            ax.set_ylabel("Score")
+
+            # Rotate x-axis labels to 45° for better visibility and compactness
+            ax.set_xticks(range(len(player_names)))
+            ax.set_xticklabels(player_names, rotation=45, ha='right', fontsize=9)
+
+            # Apply grid for better readability
+            ax.grid(axis='y', linestyle='--', alpha=0.7)
+
+            # Adjust layout to prevent label cutoff
+            plt.tight_layout()
+
+            # Embed the plot in the right frame
+            canvas = FigureCanvasTkAgg(fig, master=right_frame)
+            canvas.draw()
+            canvas.get_tk_widget().pack(pady=10)
+        else:
+            no_data_label = Label(right_frame, text="No data available to plot.", font=("Arial", 12))
+            no_data_label.pack(pady=10)
+
+        close_button = Button(self, text="Close", command=self.destroy, highlightbackground="#FFFDF7", fg="#F46197")
+        close_button.pack(pady=10)
 
 
 
@@ -401,8 +421,7 @@ class NightMarketApp(tk.Tk):  # Inherit from Tk instead of object
                 price_label = Label(frame, text=f"Price: {skin.discounted_price} VP", font=("Arial", 8))
                 price_label.pack()
 
-            close_button = Button(inventory_window, text="Close", command=inventory_window.destroy, bg="#FFFDF7")
-            close_button.pack(pady=10)
+
             
     # def clear_frame(self):
     #     # Remove all widgets from the current frame to prepare for the next page
