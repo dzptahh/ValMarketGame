@@ -198,11 +198,12 @@ class NightMarketApp(tk.Tk):  # Inherit from Tk instead of object
             return
         if self.manager.process_purchase(skin):  # Ensure process_purchase deducts from balance
             self.stats.record_purchase(skin)
-            self.custom_popup("Purchase Successful ✅", f"You bought {skin.name} for {skin.discounted_price} VP! 🔥")
             self.market.refresh_skin(box_index)
             new_skin = self.market.available_skins[box_index]
             self.update_skin_display(new_skin, box_index)
-            self.update_balance()  # This ensures the balance gets updated in the UI
+            self.update_balance()
+            # Update the pop-up to reflect the new skin
+            self.custom_popup("Purchase Successful ✅", f"You bought {skin.name} for {skin.discounted_price} VP! 🔥\nNew Skin in Box: {new_skin.name}")
         else:
             self.custom_popup("Purchase Failed ❌", "Not enough balance! 💸")
             self.update_balance()
